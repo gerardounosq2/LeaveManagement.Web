@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
+using LeaveManagement.Web.Contracts;
 using LeaveManagement.Web.Data;
 using LeaveManagement.Web.Data.Models;
 using LeaveManagement.Web.Data.ViewModels;
+using LeaveManagement.Web.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,25 +11,23 @@ namespace LeaveManagement.Web.Controllers
 {
    public class LeaveTypesController : Controller
    {
-      private readonly ApplicationDbContext context;
+      private readonly ILeaveTypeRepository repository;
       private readonly IMapper mapper;
 
-      public LeaveTypesController(ApplicationDbContext context, IMapper mapper)
+      public LeaveTypesController(ILeaveTypeRepository repository, IMapper mapper)
       {
-         this.context = context;
+         this.repository = repository;
          this.mapper = mapper;
       }
 
       // GET: LeaveTypes
-      public async Task<IActionResult> Index() => View(mapper.Map<IEnumerable<LeaveTypeViewModel>>(await context.LeaveTypes.ToListAsync()));
+      public async Task<IActionResult> Index() => View(mapper.Map<IEnumerable<LeaveTypeViewModel>>(await repository.GetAllAsync()));
 
       // GET: LeaveTypes/Details/5
       public async Task<IActionResult> Details(int? id)
       {
-         if (id == null || context.LeaveTypes == null)
-            return NotFound();
+         var leaveType = await repository.GetByIdAsync(id);
 
-         var leaveType = await context.LeaveTypes.FindAsync(id);
          if (leaveType == null)
             return NotFound();
 
@@ -48,8 +48,7 @@ namespace LeaveManagement.Web.Controllers
          if (ModelState.IsValid)
          {
             var leaveType = mapper.Map<LeaveType>(leaveTypeViewModel);
-            context.LeaveTypes.Add(leaveType);
-            await context.SaveChangesAsync();
+            await repository.AddAsync(leaveType);
             return RedirectToAction(nameof(Index));
          }
          return View(leaveTypeViewModel);
@@ -58,10 +57,7 @@ namespace LeaveManagement.Web.Controllers
       // GET: LeaveTypes/Edit/5
       public async Task<IActionResult> Edit(int? id)
       {
-         if (id == null || context.LeaveTypes == null)
-            return NotFound();
-
-         var leaveType = await context.LeaveTypes.FindAsync(id);
+         var leaveType = await repository.GetByIdAsync(id);
          if (leaveType == null)
             return NotFound();
 
@@ -86,12 +82,11 @@ namespace LeaveManagement.Web.Controllers
             try
             {
                var leaveType = mapper.Map<LeaveType>(leaveTypeVm);
-               context.LeaveTypes.Update(leaveType);
-               await context.SaveChangesAsync();
+               await repository.UpdateAsync(leaveType);
             }
             catch (DbUpdateConcurrencyException)
             {
-               if (!context.LeaveTypes.Any(e => e.Id == leaveTypeVm.Id))
+               if (!await repository.Exists(leaveTypeVm.Id))
                   return NotFound();
                else
                   throw;
@@ -101,40 +96,12 @@ namespace LeaveManagement.Web.Controllers
          return View(leaveTypeVm);
       }
 
-      // GET: LeaveTypes/Delete/5
-      public async Task<IActionResult> Delete(int? id)
-      {
-         if (id == null || context.LeaveTypes == null)
-         {
-            return NotFound();
-         }
-
-         var leaveType = await context.LeaveTypes
-             .FirstOrDefaultAsync(m => m.Id == id);
-         if (leaveType == null)
-         {
-            return NotFound();
-         }
-
-         return View(leaveType);
-      }
-
       // POST: LeaveTypes/Delete/5
       [HttpPost, ActionName("Delete")]
       [ValidateAntiForgeryToken]
       public async Task<IActionResult> DeleteConfirmed(int id)
       {
-         if (context.LeaveTypes == null)
-         {
-            return Problem("Entity set 'ApplicationDbContext.LeaveTypes'  is null.");
-         }
-         var leaveType = await context.LeaveTypes.FindAsync(id);
-         if (leaveType != null)
-         {
-            context.LeaveTypes.Remove(leaveType);
-         }
-
-         await context.SaveChangesAsync();
+         await repository.DeleteAsync(id);
          return RedirectToAction(nameof(Index));
       }
    }
