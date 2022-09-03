@@ -3,7 +3,6 @@ using LeaveManagement.Web.Constants;
 using LeaveManagement.Web.Contracts;
 using LeaveManagement.Web.Data;
 using LeaveManagement.Web.Data.ViewModels;
-using LeaveManagement.Web.Repositories;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -37,25 +36,6 @@ namespace LeaveManagement.Web.Controllers
          return View(allocations);
       }
 
-      public ActionResult Create()
-      {
-         return View();
-      }
-
-      [HttpPost]
-      [ValidateAntiForgeryToken]
-      public ActionResult Create(IFormCollection collection)
-      {
-         try
-         {
-            return RedirectToAction(nameof(Index));
-         }
-         catch
-         {
-            return View();
-         }
-      }
-
       public async Task<IActionResult> EditAllocation(int id)
       {
          var leaveAllocation = await allocationRepository.GetEmployeeAllocation(id);
@@ -73,17 +53,13 @@ namespace LeaveManagement.Web.Controllers
          {
             if (ModelState.IsValid)
             {
-               var leaveAllocation = await allocationRepository.GetByIdAsync(id);
-               if (leaveAllocation == null)
-                  return NotFound();
-
-               leaveAllocation.Period = model.Period;
-               leaveAllocation.NumberOfDays = model.NumberOfDays;
-               await allocationRepository.UpdateAsync(leaveAllocation);
-               return RedirectToAction(nameof(ViewAllocations),new {id = model.EmployeeId});
+               if (await allocationRepository.UpdateEmployeeAllocation(model))
+               {
+                  return RedirectToAction(nameof(ViewAllocations), new { id = model.EmployeeId });
+               }
             }
          }
-         catch (Exception ex)
+         catch (Exception)
          {
             ModelState.AddModelError(string.Empty, "An error has ocurred.");
             return View();
@@ -91,22 +67,6 @@ namespace LeaveManagement.Web.Controllers
          model.Employee = mapper.Map<EmployeeListVM>(await userManager.FindByIdAsync(model.EmployeeId));
          model.LeaveType = mapper.Map<LeaveTypeViewModel>(await leaveTypeRepository.GetByIdAsync(model.LeaveTypeId));
          return View(model);
-      }
-
-      public ActionResult Delete(int id) => View();
-
-      [HttpPost]
-      [ValidateAntiForgeryToken]
-      public ActionResult Delete(int id, IFormCollection collection)
-      {
-         try
-         {
-            return RedirectToAction(nameof(Index));
-         }
-         catch
-         {
-            return View();
-         }
       }
    }
 }

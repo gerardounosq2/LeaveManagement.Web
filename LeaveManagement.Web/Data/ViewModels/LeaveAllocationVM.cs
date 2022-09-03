@@ -16,6 +16,6 @@ namespace LeaveManagement.Web.Data.ViewModels
       [Display(Name = "Allocation Period")]
       public int Period { get; set; }
 
-      public LeaveTypeViewModel LeaveType { get; set; }
+      public LeaveTypeViewModel? LeaveType { get; set; }
    }
 }
