@@ -69,5 +69,32 @@ namespace LeaveManagement.Web.Repositories
          }
          return model;
       }
+
+      public async Task ChangeApprovalStatus(int leaveRequestId, bool approved)
+      {
+         var leaveRequest = await GetByIdAsync(leaveRequestId);
+         leaveRequest.Approved = approved;
+
+         if (approved)
+         {
+            var allocation = await allocationRepository.GetEmployeeAllocation(leaveRequest.RequestingEmployeeId, leaveRequest.LeaveTypeId);
+            var daysRequested = (int)(leaveRequest.EndDate - leaveRequest.EndDate).TotalDays;
+            allocation.NumberOfDays -= daysRequested;
+            await allocationRepository.UpdateAsync(allocation);
+         }
+         await UpdateAsync(leaveRequest);
+      }
+
+      public async Task<LeaveRequestVm> GetLeaveRequestAsync(int? id)
+      {
+         var leaveRequest = await context.LeaveRequests.Include(r => r.LeaveType).FirstOrDefaultAsync(r => r.Id == id);
+
+         if (leaveRequest == null)
+            return null;
+
+         var model = mapper.Map<LeaveRequestVm>(leaveRequest);
+         model.Employee=mapper.Map<EmployeeListVM>(await userManager.FindByIdAsync(leaveRequest?.RequestingEmployeeId));
+         return model;
+      }
    }
 }

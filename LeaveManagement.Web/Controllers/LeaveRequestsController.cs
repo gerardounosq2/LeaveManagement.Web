@@ -27,20 +27,27 @@ namespace LeaveManagement.Web.Controllers
 
       public async Task<IActionResult> Details(int? id)
       {
-         if (id == null || context.LeaveRequests == null)
-         {
-            return NotFound();
-         }
+         var leaveRequest = await requestRepository.GetLeaveRequestAsync(id);
 
-         var leaveRequest = await context.LeaveRequests
-             .Include(l => l.LeaveType)
-             .FirstOrDefaultAsync(m => m.Id == id);
          if (leaveRequest == null)
-         {
             return NotFound();
-         }
 
          return View(leaveRequest);
+      }
+
+      [HttpPost]
+      [ValidateAntiForgeryToken]
+      public async Task<IActionResult> ApproveRequest(int id, bool approved)
+      {
+         try
+         {
+            await requestRepository.ChangeApprovalStatus(id, approved);
+         }
+         catch (Exception ex)
+         {
+            throw;
+         }
+         return RedirectToAction(nameof(Index));
       }
 
       public IActionResult Create()
@@ -61,7 +68,7 @@ namespace LeaveManagement.Web.Controllers
             if (ModelState.IsValid)
             {
                await requestRepository.CreateLeaveRequest(model);
-               return RedirectToAction(nameof(Index));
+               return RedirectToAction(nameof(MyLeave));
             }
          }
          catch (Exception)
