@@ -15,11 +15,13 @@ namespace LeaveManagement.Web.Controllers
    {
       private readonly ApplicationDbContext context;
       private readonly ILeaveRequestRepository requestRepository;
+      private readonly ILogger<LeaveRequestsController> logger;
 
-      public LeaveRequestsController(ApplicationDbContext context, ILeaveRequestRepository requestRepository)
+      public LeaveRequestsController(ApplicationDbContext context, ILeaveRequestRepository requestRepository, ILogger<LeaveRequestsController> logger)
       {
          this.context = context;
          this.requestRepository = requestRepository;
+         this.logger = logger;
       }
 
       [Authorize(Roles = Roles.Administrator)]
@@ -45,6 +47,7 @@ namespace LeaveManagement.Web.Controllers
          }
          catch (Exception ex)
          {
+            logger.LogError(ex, $"Error when approving request.");
             throw;
          }
          return RedirectToAction(nameof(Index));
