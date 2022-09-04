@@ -21,14 +21,12 @@ namespace LeaveManagement.Web.Controllers
          this.requestRepository = requestRepository;
       }
 
-      // GET: LeaveRequests
       public async Task<IActionResult> Index()
       {
          var applicationDbContext = context.LeaveRequests.Include(l => l.LeaveType);
          return View(await applicationDbContext.ToListAsync());
       }
 
-      // GET: LeaveRequests/Details/5
       public async Task<IActionResult> Details(int? id)
       {
          if (id == null || context.LeaveRequests == null)
@@ -47,7 +45,6 @@ namespace LeaveManagement.Web.Controllers
          return View(leaveRequest);
       }
 
-      // GET: LeaveRequests/Create
       public IActionResult Create()
       {
          var model = new LeaveRequestCreateVm
@@ -57,9 +54,6 @@ namespace LeaveManagement.Web.Controllers
          return View(model);
       }
 
-      // POST: LeaveRequests/Create
-      // To protect from overposting attacks, enable the specific properties you want to bind to.
-      // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
       [HttpPost]
       [ValidateAntiForgeryToken]
       public async Task<IActionResult> Create(LeaveRequestCreateVm model)
@@ -81,7 +75,6 @@ namespace LeaveManagement.Web.Controllers
          return View(model);
       }
 
-      // GET: LeaveRequests/Edit/5
       public async Task<IActionResult> Edit(int? id)
       {
          if (id == null || context.LeaveRequests == null)
@@ -98,9 +91,6 @@ namespace LeaveManagement.Web.Controllers
          return View(leaveRequest);
       }
 
-      // POST: LeaveRequests/Edit/5
-      // To protect from overposting attacks, enable the specific properties you want to bind to.
-      // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
       [HttpPost]
       [ValidateAntiForgeryToken]
       public async Task<IActionResult> Edit(int id, [Bind("StartDate,EndDate,LeaveTypeId,DateRequested,RequestComments,Approved,Cancelled,RequestingEmployeeId,Id,DateCreated,DateModified")] LeaveRequest leaveRequest)
@@ -134,7 +124,6 @@ namespace LeaveManagement.Web.Controllers
          return View(leaveRequest);
       }
 
-      // GET: LeaveRequests/Delete/5
       public async Task<IActionResult> Delete(int? id)
       {
          if (id == null || context.LeaveRequests == null)
@@ -153,7 +142,6 @@ namespace LeaveManagement.Web.Controllers
          return View(leaveRequest);
       }
 
-      // POST: LeaveRequests/Delete/5
       [HttpPost, ActionName("Delete")]
       [ValidateAntiForgeryToken]
       public async Task<IActionResult> DeleteConfirmed(int id)
@@ -176,5 +164,7 @@ namespace LeaveManagement.Web.Controllers
       {
          return context.LeaveRequests.Any(e => e.Id == id);
       }
+
+      public async Task<ActionResult> MyLeave() => View(await requestRepository.GetMyLeaveDetails());
    }
 }

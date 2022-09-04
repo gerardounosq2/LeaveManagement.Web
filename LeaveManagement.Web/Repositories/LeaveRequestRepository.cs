@@ -4,6 +4,7 @@ using LeaveManagement.Web.Data;
 using LeaveManagement.Web.Data.Models;
 using LeaveManagement.Web.Data.ViewModels;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace LeaveManagement.Web.Repositories
 {
@@ -12,13 +13,17 @@ namespace LeaveManagement.Web.Repositories
       private readonly IMapper mapper;
       private readonly IHttpContextAccessor contextAccessor;
       private readonly UserManager<Employee> userManager;
+      private readonly ILeaveAllocationRepository allocationRepository;
+      private readonly ApplicationDbContext context;
 
-      public LeaveRequestRepository(ApplicationDbContext context, IMapper mapper, IHttpContextAccessor contextAccessor, UserManager<Employee> userManager)
+      public LeaveRequestRepository(ApplicationDbContext context, IMapper mapper, IHttpContextAccessor contextAccessor, UserManager<Employee> userManager, ILeaveAllocationRepository allocationRepository)
          : base(context)
       {
          this.mapper = mapper;
          this.contextAccessor = contextAccessor;
          this.userManager = userManager;
+         this.allocationRepository = allocationRepository;
+         this.context = context;
       }
 
       public async Task CreateLeaveRequest(LeaveRequestCreateVm model)
@@ -31,6 +36,20 @@ namespace LeaveManagement.Web.Repositories
          leaveRequest.RequestingEmployeeId = user.Id;
 
          await AddAsync(leaveRequest);
+      }
+
+      public async Task<IEnumerable<LeaveRequest>> GetAllAsync(string employeeId)
+      {
+         return await context.LeaveRequests.Where(r => r.RequestingEmployeeId == employeeId).ToListAsync();
+      }
+
+      public async Task<EmployeeLeaveRequestVm> GetMyLeaveDetails()
+      {
+         var user = await userManager.GetUserAsync(contextAccessor?.HttpContext?.User);
+
+         var allocations = (await allocationRepository.GetEmployeeAllocations(user.Id)).LeaveAllocations;
+         var requests = mapper.Map<IEnumerable<LeaveRequestVm>>(await GetAllAsync(user.Id));
+         return new EmployeeLeaveRequestVm(allocations, requests);
       }
    }
 }
