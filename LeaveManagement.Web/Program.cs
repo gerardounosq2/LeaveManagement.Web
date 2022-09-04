@@ -19,6 +19,8 @@ builder.Services
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
+builder.Services.AddHttpContextAccessor();
+
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddAutoMapper(typeof(MappingProfiles));
