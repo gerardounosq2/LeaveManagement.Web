@@ -74,7 +74,8 @@ namespace LeaveManagement.Web.Controllers
          {
             try
             {
-               var leaveType = mapper.Map<LeaveType>(leaveTypeVm);
+               var leaveType = await leaveTypeRepository.GetByIdAsync(id);
+               mapper.Map(leaveTypeVm, leaveType);
                await leaveTypeRepository.UpdateAsync(leaveType);
             }
             catch (DbUpdateConcurrencyException)
