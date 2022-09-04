@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using LeaveManagement.Web.Constants;
 using LeaveManagement.Web.Contracts;
 using LeaveManagement.Web.Data;
@@ -15,14 +16,16 @@ namespace LeaveManagement.Web.Repositories
       private readonly UserManager<Employee> userManager;
       private readonly ILeaveTypeRepository leaveTypeRepository;
       private readonly IMapper mapper;
+      private readonly AutoMapper.IConfigurationProvider configuration;
 
-      public LeaveAllocationRepository(ApplicationDbContext context, UserManager<Employee> userManager, ILeaveTypeRepository leaveTypeRepository, IMapper mapper)
+      public LeaveAllocationRepository(ApplicationDbContext context, UserManager<Employee> userManager, ILeaveTypeRepository leaveTypeRepository, IMapper mapper, AutoMapper.IConfigurationProvider configuration)
          : base(context)
       {
          this.context = context;
          this.userManager = userManager;
          this.leaveTypeRepository = leaveTypeRepository;
          this.mapper = mapper;
+         this.configuration = configuration;
       }
 
       public async Task<bool> AllocationExists(string employeeId, int leaveTypeId, int period)
@@ -58,12 +61,14 @@ namespace LeaveManagement.Web.Repositories
             .LeaveAllocations
             .Include(r => r.LeaveType)
             .Where(r => r.EmployeeId == employeeId)
+            .ProjectTo<LeaveAllocationVM>(configuration)
             .ToListAsync();
+
          var employee = await userManager.FindByIdAsync(employeeId);
 
          var employeeAllocation = mapper.Map<EmployeeAllocationVm>(employee);
 
-         employeeAllocation.LeaveAllocations = mapper.Map<IEnumerable<LeaveAllocationVM>>(allocations);
+         employeeAllocation.LeaveAllocations = allocations;
 
          return employeeAllocation;
       }

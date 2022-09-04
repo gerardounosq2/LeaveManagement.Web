@@ -10,6 +10,8 @@ namespace LeaveManagement.Web.Data.ViewModels
       public LeaveTypeViewModel LeaveType { get; set; }
 
       [Display(Name = "Date Requested")]
+      [DisplayFormat(DataFormatString = "{0:yyyy-MM-DD}")]
+      [DataType(DataType.Date)]
       public DateTime DateRequested { get; set; }
 
       public bool? Approved { get; set; }

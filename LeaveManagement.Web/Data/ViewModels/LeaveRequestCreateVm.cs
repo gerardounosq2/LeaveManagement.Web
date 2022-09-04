@@ -7,10 +7,14 @@ namespace LeaveManagement.Web.Data.ViewModels
    {
       [Required]
       [Display(Name = "Start Date")]
+      [DisplayFormat(DataFormatString = "{0:yyyy-MM-DD}")]
+      [DataType(DataType.Date)]
       public DateTime? StartDate { get; set; }
 
       [Required]
       [Display(Name = "End Date")]
+      [DisplayFormat(DataFormatString = "{0:yyyy-MM-DD}")]
+      [DataType(DataType.Date)]
       public DateTime? EndDate { get; set; }
 
       [Required]
