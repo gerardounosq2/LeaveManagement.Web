@@ -1,4 +1,5 @@
-﻿using LeaveManagement.Web.Contracts;
+﻿using LeaveManagement.Web.Constants;
+using LeaveManagement.Web.Contracts;
 using LeaveManagement.Web.Data;
 using LeaveManagement.Web.Data.Models;
 using LeaveManagement.Web.Data.ViewModels;
@@ -21,11 +22,8 @@ namespace LeaveManagement.Web.Controllers
          this.requestRepository = requestRepository;
       }
 
-      public async Task<IActionResult> Index()
-      {
-         var applicationDbContext = context.LeaveRequests.Include(l => l.LeaveType);
-         return View(await applicationDbContext.ToListAsync());
-      }
+      [Authorize(Roles = Roles.Administrator)]
+      public async Task<IActionResult> Index() => View(await requestRepository.GetAdminLeaveRequestList());
 
       public async Task<IActionResult> Details(int? id)
       {

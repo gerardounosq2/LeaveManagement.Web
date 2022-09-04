@@ -88,15 +88,15 @@
 					{
 						<span class="badge bg-warning">Pending</span>
 					}
-					else if (item.Approved.Value)
+					else if (item.Approved == true)
 					{
 						<span class="badge bg-success">Approved</span>
 					}
-					else if (!item.Approved.Value)
+					else if (item.Approved == false)
 					{
 						<span class="badge bg-danger">Rejected</span>
 					}
-				</td>				
+				</td>
 				<td>
 					<a class="btn btn-sm btn-danger" asp-action="Cancel" asp-route-id="@item.Id">Cancel Request</a>
 				</td>

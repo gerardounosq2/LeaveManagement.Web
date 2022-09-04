@@ -51,5 +51,23 @@ namespace LeaveManagement.Web.Repositories
          var requests = mapper.Map<IEnumerable<LeaveRequestVm>>(await GetAllAsync(user.Id));
          return new EmployeeLeaveRequestVm(allocations, requests);
       }
+
+      public async Task<AdminViewRequestsVm> GetAdminLeaveRequestList()
+      {
+         var requests = await context.LeaveRequests.Include(r => r.LeaveType).ToListAsync();
+         var model = new AdminViewRequestsVm
+         {
+            TotalRequests = requests.Count(),
+            ApprovedRequests = requests.Count(r => r.Approved == true),
+            PendingRequests = requests.Count(r => r.Approved == null),
+            RejectedRequests = requests.Count(r => r.Approved == false),
+            LeaveRequests = mapper.Map<IEnumerable<LeaveRequestVm>>(requests)
+         };
+         foreach (var request in model.LeaveRequests)
+         {
+            request.Employee = mapper.Map<EmployeeListVM>(await userManager.FindByIdAsync(request.RequestingEmployeeId));
+         }
+         return model;
+      }
    }
 }
